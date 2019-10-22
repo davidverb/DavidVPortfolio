@@ -17,26 +17,26 @@
     if ($fname == null || $lname == null ||
         $email == null || $commBox == null) {
         $error = "Invalid input data. Check all fields and try again.";
-        /* */
         echo "Form Data Error: " . $error; 
         exit();
         } else {
-            $dsn = 'mysql:host=localhost;dbname=dave_buisnessdb';
-            $username = 'root';
-            $password = 'Pa$$w0rd';
 
-            try {
-                $db = new PDO($dsn, $username, $password);
-
-            } catch (PDOException $e) {
-                $error_message = $e->getMessage();
-                /* include('database_error.php'); */
-                echo "DB Error: " . $error_message; 
-                exit();
+            include "database/database.php";
+            include "database/visitor.php";
+            $db = Database::getDB();
+            if (!is_object($db)){
+                $message = "We are experiencing technical difficulties. Please check back later.";
+            } else {
+                $visitor_name = addVisitor($fname, $lname, $email, $commBox);
+                if ($visitor_name == 0) {
+                    $message = "Unable to add to database. Please check back later.";
+                } else{
+                    $message = "Thank you, $fname  $lname, for contacting me! I will get back to you shortly.";
+                }
             }
 
-            // Add the product to the database  
-            $query = 'INSERT INTO contact
+//             Add the product to the database  
+            $query = 'INSERT INTO contacts
                          (fname, lname, email, commBox)
                       VALUES
                          (:fname, :lname, :email, :commBox)';
@@ -77,7 +77,7 @@
 </header>
 <section>
     <article>
-  <h2>Thank you, <?php echo $fname; ?> <?php echo $lname; ?>, you will be contacted as soon as possible.</h2>
+  <h2><?php echo $message; ?></h2>
   <p>&nbsp;</p>
   <p>&nbsp;</p>
   <p>&nbsp;</p>

@@ -10,30 +10,22 @@
 $feedID = filter_input(INPUT_POST, 'feedID', FILTER_VALIDATE_INT);
 
 {
-$dsn = 'mysql:host=localhost;dbname=dave_buisnessdb';
-            $username = 'root';
-            $password = 'Pa$$w0rd';
-
-            try {
-                $db = new PDO($dsn, $username, $password);
-
-            } catch (PDOException $e) {
-                $error_message = $e->getMessage();
-                /* include('database_error.php'); */
-                echo "DB Error: " . $error_message; 
-                exit();
-            }
-            
+try {
+    include_once './database/database.php';
+    $db = Database::getDB();
+} catch (Exception $ex) {
+    echo 'Connection error: ' . $e->getMessage();
+    exit();
 }
 // Delete the feedback from the database
 if ($feedID != false) {
-    $query = 'DELETE FROM contact
+    $query = 'DELETE FROM contacts
               WHERE feedID = :feedID';
     $statement = $db->prepare($query);
     $statement->bindValue(':feedID', $feedID);
     $success = $statement->execute();
     $statement->closeCursor();    
 }
-
 // Display the admin page
 include('Admin.php');
+}

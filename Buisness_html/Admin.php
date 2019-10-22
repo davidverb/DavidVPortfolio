@@ -4,7 +4,8 @@
 /*  Date	Name	Description                                 */
 /*  --------------------------------------------------------------- */
 /*                                                                  */
-/*  9/13/2019  David Verbeck   Added class logic                    */
+/*  9/13/2019  David Verbeck   Added class logic. Updated delete.   */
+/*                             Updated logic to support new table     */
 /********************************************************************/
     
 //    $fname = filter_input(INPUT_POST, 'fname');
@@ -13,29 +14,39 @@
 //    /* echo "Fields: "   */
 //    
     
-  {   
-try {
+    {
+   try {
     include_once './database/database.php';
     $db = Database::getDB();
 } catch (Exception $ex) {
-    echo 'Connection error: ' . $e->getMessage();
+    echo 'Connection error, please try again later ';
     exit();
 }
 
-    $action = filter_input(INPUT_POST, 'NULL');
+    $action = filter_input(INPUT_POST, 'action');
     
-    if ($action ==  NULL){
+    if ($action ==  NULL || $action == 'action'){
         
         $action = 'list_visitors';
     }
-    
-  //  echo $action;
-    
 
+    //echo $action ;
+      
+    if ($action == 'delete_feedback') {
+        $feedID = filter_input(INPUT_POST, 'feedID', FILTER_VALIDATE_INT);
+        $query = 'DELETE FROM contacts
+              WHERE feedID = :feedID';
+        $statement = $db->prepare($query);
+        $statement->bindValue(':feedID', $feedID);
+        $success = $statement->execute();      
+        $statement->closeCursor(); 
+        $action = 'list_visitors';
+    }
+        
     if ($action == 'list_visitors'){
         // Read visitors 
 
-        $query = 'SELECT * from contact
+        $query = 'SELECT * from contacts
                     ORDER BY fname';
         $statement = $db->prepare($query);
         $statement->execute();
@@ -43,23 +54,8 @@ try {
         $statement->closeCursor();
         /* echo "Fields: " . $fname . $email . $commBox; */
     }
-    
-    else if ($action == 'delete_feedback') {
-        $feedID = filter_input(INPUT_POST, 'feedID', FILTER_VALIDATE_INT);
-        $query = 'DELETE from contact
-                    WHERE feedID = :feedID';
-        $statement = $db->prepare($query);
-        $statement->bindValue('feedID', $feedID);
-        $statement->execute();
-        $statement->closeCursor();
-        //echo "DELETE LOGIC"; 
-        header("Location: Admin.php");
-    }
 
 }
-
-
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -112,11 +108,11 @@ try {
                 <td><?php echo $contact['email']; ?></td>
                 <td><?php echo $contact['commBox']; ?></td>
                 <td><?php echo $contact['employeeID']; ?></td>
-                <td><form action="delete_feedback.php" method="post">
+                <td><form action="Admin.php" method="post">
                     <input type="hidden" name="action" value="delete_feedback">
                     <input type="hidden" name="feedID"
-                           value="<?php echo $contact['feedID']; ?>">
-                    <input type="submit" value="Delete">
+                           value="<?php echo $contact['feedID'] ; ?>">
+                    <input type="submit" value="Delete">  
                 </form></td>
             </tr>
             <?php endforeach; ?>
@@ -133,3 +129,4 @@ try {
 </article>
 </body>
 </html>
+

@@ -22,7 +22,7 @@ class Database {
                                      self::$password);
             } catch (PDOException $e) {
                 $error_message = $e->getMessage();
-                include('../errors/database_error.php');
+                echo 'Connection error, please try again later';
                 exit();
             }
         }
